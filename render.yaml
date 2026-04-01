@@ -1,0 +1,30 @@
+# Render deployment configuration
+# Docs: https://render.com/docs/render-yaml-reference
+
+services:
+  - type: web
+    name: dhithra
+    runtime: python
+    region: oregon
+
+    # Build: install Python + Node deps, compile React
+    buildCommand: chmod +x build.sh && ./build.sh
+
+    # Start: run FastAPI (serves both API and React SPA)
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+    # Free tier — uses ephemeral disk (SQLite resets on redeploy)
+    # For persistence: add a Render Disk or use DATABASE_URL with PostgreSQL
+    plan: free
+
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false           # Set in Render dashboard → Environment
+      - key: JWT_SECRET
+        generateValue: true   # Auto-generated secure random value
+      - key: FREE_MODEL
+        value: mistralai/mistral-7b-instruct:free
+      - key: DATABASE_URL
+        value: sqlite:///./dhithra.db
+      - key: PYTHON_VERSION
+        value: 3.12.0
